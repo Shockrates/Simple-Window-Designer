@@ -3,6 +3,7 @@ var  drawHorizontalLine = false;
 // Boolean variable to determine whether to draw a vertical line
 var  drawVerticalLine = false;
 var rects = [];
+var seperators = [];
 document.addEventListener("DOMContentLoaded", function() {
 
     // Rectangle coordinates and dimensions
@@ -29,8 +30,8 @@ document.addEventListener("DOMContentLoaded", function() {
     
 
     const canvas = document.getElementById('myCanvas');
-    const width = (canvas.width = window.innerWidth);
-    const height = (canvas.height = window.innerHeight);
+    const width = (canvas.width = window.innerWidth/1.5);
+    const height = (canvas.height = window.innerHeight/1.5);
     const ctx = canvas.getContext("2d");
 
     ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear the canvas
@@ -59,12 +60,21 @@ document.addEventListener("DOMContentLoaded", function() {
             drawHorizontalLine
         ) {
             // Draw a horizontal line at the height of the mouse click
-            ctx.lineWidth = rectStroke; // Set the line width to 5 pixels (adjust as needed)
-            ctx.strokeStyle = '#7d7b79'; // Set stroke color to red (you can change it to any color)
-            ctx.beginPath();
-            ctx.moveTo(rect.rect.rectX-2, mouseY);
-            ctx.lineTo(rect.rect.rectX + rect.rect.rectWidth+2, mouseY);
-            ctx.stroke();
+            //ctx.lineWidth = rectStroke; // Set the line width to 5 pixels (adjust as needed)
+            //ctx.strokeStyle = '#7d7b79'; // Set stroke color to red (you can change it to any color)
+            // ctx.beginPath();
+            // ctx.moveTo(rect.rect.rectX-2, mouseY);
+            // ctx.lineTo(rect.rect.rectX + rect.rect.rectWidth+2, mouseY);
+            // ctx.stroke();
+            ctx.fillStyle = '#7d7b79';
+            ctx.fillRect(rect.rect.rectX-2, mouseY-(rectStroke/2), rect.rect.rectWidth+4, rectStroke);
+
+            seperators.push({
+                "rectX":rect.rect.rectX-2, 
+                "rectY":mouseY-(rectStroke/2), 
+                "rectWidth":rect.rect.rectWidth+4, 
+                "rectHeight":rectStroke
+            })
 
             rectVerticalSplit(mouseX, mouseY, rect)
         } else if(
@@ -72,12 +82,22 @@ document.addEventListener("DOMContentLoaded", function() {
             drawVerticalLine
         ){
             // Draw a vertical line at the height of the mouse click
-            ctx.lineWidth = rectStroke; // Set the line width to 5 pixels (adjust as needed)
-            ctx.strokeStyle = '#7d7b79'; // Set stroke color to red (you can change it to any color)
-            ctx.beginPath();
-            ctx.moveTo(mouseX, rect.rect.rectY-2);
-            ctx.lineTo(mouseX, rect.rect.rectY + rect.rect.rectHeight+2 );
-            ctx.stroke();
+            // ctx.lineWidth = rectStroke; // Set the line width to 5 pixels (adjust as needed)
+            // ctx.strokeStyle = '#7d7b79'; // Set stroke color to red (you can change it to any color)
+            // ctx.beginPath();
+            // ctx.moveTo(mouseX, rect.rect.rectY-2);
+            // ctx.lineTo(mouseX, rect.rect.rectY + rect.rect.rectHeight+2 );
+            // ctx.stroke();
+
+            ctx.fillStyle = '#7d7b79';
+            ctx.fillRect(mouseX-(rectStroke/2), rect.rect.rectY-2, rectStroke, rect.rect.rectHeight+4,);
+            
+            seperators.push({
+                "rectX":mouseX-(rectStroke/2), 
+                "rectY":rect.rect.rectY-2, 
+                "rectWidth":rectStroke, 
+                "rectHeight":rect.rect.rectHeight+4
+            })
 
             rectHorizontalSplit(mouseX, mouseY, rect)
         } else if (
@@ -87,7 +107,7 @@ document.addEventListener("DOMContentLoaded", function() {
             var clickedName = getRectangleCName(mouseX, mouseY);
 
             // Log the color of the clicked rectangle
-            let message = (clickedName) ? "rect_"+clickedName.pos : "No rectangle was clicked";
+            let message = (clickedName) ? clickedName.is+"_"+clickedName.pos : "No rectangle was clicked";
             console.log(message);
         }
     });
@@ -106,7 +126,18 @@ document.addEventListener("DOMContentLoaded", function() {
                 mouseY >= rect.rectY &&
                 mouseY <= rect.rectY + rect.rectHeight
             ) {
-                return {"pos":i, "rect": rect};
+                return {"pos":i, "is":"oppening" ,"rect": rect};
+            }
+        }
+        for (var i = 0; i < seperators.length; i++) {
+            var rect = seperators[i];
+            if (
+                mouseX >= rect.rectX &&
+                mouseX <= rect.rectX + rect.rectWidth &&
+                mouseY >= rect.rectY &&
+                mouseY <= rect.rectY + rect.rectHeight
+            ) {
+                return {"pos":i, "is":"seperator", "rect": rect};
             }
         }
         return null; // Return null if no rectangle was clicked
@@ -130,15 +161,10 @@ document.addEventListener("DOMContentLoaded", function() {
 
         rects.splice( rectDef.pos, 1, rect1, rect2);
     
-        ctx.strokeStyle = '#FF0000'
-        ctx.lineWidth = 2; // Set the line width to 5 pixels (adjust as needed)
-        
         for (const rect of rects) {
-            ctx.strokeRect(rect.rectX, rect.rectY, rect.rectWidth, rect.rectHeight); // Draw a rectangle outline
+            //ctx.strokeRect(rect.rectX, rect.rectY, rect.rectWidth, rect.rectHeight); // Draw a rectangle outline
+            drawRectOutline(rect,2,'#FF0000')
         }
-       
-        ctx.lineWidth = rectStroke; // Set the line width to 5 pixels (adjust as needed)
-        ctx.strokeStyle = '#7d7b79'; // Set stroke color to red (you can change it to any color)
 
     }
 
@@ -159,20 +185,12 @@ document.addEventListener("DOMContentLoaded", function() {
         }
         //console.log(mouseX, rect.rectWidth);
         rects.splice( rectDef.pos, 1, rect1, rect2);
-    
-        ctx.strokeStyle = '#c2d11f'
-        ctx.lineWidth = 2; // Set the line width to 5 pixels (adjust as needed)
-        
-        // ctx.strokeRect(rect1.rectX, rect1.rectY, rect1.rectWidth, rect1.rectHeight); // Draw a rectangle outline
-        // ctx.strokeRect(rect2.rectX, rect2.rectY, rect2.rectWidth, rect2.rectHeight); // Draw a rectangle outline
-
-
+ 
         for (const rect of rects) {
-            ctx.strokeRect(rect.rectX, rect.rectY, rect.rectWidth, rect.rectHeight); // Draw a rectangle outline
+            //ctx.strokeRect(rect.rectX, rect.rectY, rect.rectWidth, rect.rectHeight); // Draw a rectangle outline
+            drawRectOutline(rect,2,'#FF0000')
         }
        
-        ctx.lineWidth = rectStroke; // Set the line width to 5 pixels (adjust as needed)
-        ctx.strokeStyle = '#7d7b79'; // Set stroke color to red (you can change it to any color)
 
     }
    
