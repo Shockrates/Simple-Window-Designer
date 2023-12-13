@@ -4,6 +4,8 @@ var  drawHorizontalLine = false;
 var  drawVerticalLine = false;
 var rects = [];
 var seperators = [];
+var frames = [];
+
 document.addEventListener("DOMContentLoaded", function() {
 
     // Rectangle coordinates and dimensions
@@ -19,14 +21,14 @@ document.addEventListener("DOMContentLoaded", function() {
     rects = [
         {
             "name": "rect_0",
-            "rectX": rectX+rectStroke/2,
-            "rectY": rectY+rectStroke/2,
-            "rectWidth": rectWidth-rectStroke,
-            "rectHeight" :rectHeight-rectStroke
+            "rectX": rectX+rectStroke,
+            "rectY": rectY+rectStroke,
+            "rectWidth": rectWidth-2*rectStroke,
+            "rectHeight" :rectHeight-2*rectStroke
 
         }
     ]
-    console.log(rects);
+
     
 
     const canvas = document.getElementById('myCanvas');
@@ -34,38 +36,122 @@ document.addEventListener("DOMContentLoaded", function() {
     const height = (canvas.height = window.innerHeight/1.5);
     const ctx = canvas.getContext("2d");
 
-    ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear the canvas
-    ctx.lineWidth = rectStroke; // Set the line width to 5 pixels (adjust as needed)
-    ctx.strokeStyle = '#7d7b79'; // Set stroke color to red (you can change it to any color)
-    ctx.strokeRect(rectX, rectY, rectWidth, rectHeight); // Draw a rectangle outline 
     
-    drawRectOutline(rects[0],2,'#FF0000')
+        const topCanvas = document.createElement("canvas");
+        topCanvas.style.zIndex = "1"
+        // set size:
+        topCanvas.width = canvas.width;
+        topCanvas.height = canvas.height;
+        const tctx = topCanvas.getContext("2d");
+        // insert into DOM on top:
+        canvas.parentNode.insertBefore(topCanvas, canvas);
 
-    function drawRectOutline(rect, stroke, style){
-        ctx.lineWidth = stroke; // Set the line width to 5 pixels (adjust as needed)
-        ctx.strokeStyle = style; // Set stroke color to red (you can change it to any color)
-        ctx.strokeRect(rect.rectX, rect.rectY, rect.rectWidth, rect.rectHeight); // Draw a rectangle outline 
+    ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear the canvas
+    // ctx.lineWidth = rectStroke; // Set the line width to 5 pixels (adjust as needed)
+    // ctx.strokeStyle = '#7d7b79'; // Set stroke color to red (you can change it to any color)
+    // ctx.strokeRect(rectX, rectY, rectWidth, rectHeight); // Draw a rectangle outline 
+    
+    drawDrawFrame(rectX, rectY, rectWidth, rectHeight, rectStroke)
+    //drawRectOutline(rects[0],2,'#FF0000')
+
+    function drawDrawFrame(x0, y0, width, height, stroke){
+
+        frames = [
+            {pos:"top",vertTable:getVertices("top",x0, y0, width, height, stroke)},
+            {pos:"bottom",vertTable:getVertices("bottom",x0, y0, width, height, stroke)},
+            {pos:"left",vertTable:getVertices("left",x0, y0, width, height, stroke)},
+            {pos:"right",vertTable:getVertices("right",x0, y0, width, height, stroke)},
+        ];
+        for (const frame of frames) {
+            drawShapeFromVertices(frame.vertTable);
+        }
+        
+    }
+
+    function drawShapeFromVertices(vertices) {
+        ctx.beginPath();
+        ctx.moveTo(vertices[0].x, vertices[0].y);
+
+        for (var i = 1; i < vertices.length; i++) {
+            ctx.lineTo(vertices[i].x, vertices[i].y);
+        }
+
+        ctx.closePath();
+        ctx.fillStyle = '#7d7b79'; // Set the fill color to #7d7b79
+        ctx.fill();
+    }
+
+    function getVertices(position, x0, y0, width, height, stroke){
+        var vertices = []
+        switch (position) {
+            case "top":
+                vertices=[
+                    {x:x0,y:y0},
+                    {x:x0+width,y:y0},
+                    {x:x0+width-stroke,y:y0+stroke},
+                    {x:x0+stroke,y:y0+stroke},
+                ]
+                break;
+            case "left":
+                vertices=[
+                    {x:x0,y:y0},
+                    {x:x0,y:y0+height},
+                    {x:x0+stroke,y:y0+height-stroke},
+                    {x:x0+stroke,y:y0+stroke},
+                ]
+                break;
+            case "bottom":
+                vertices=[
+                    {x:x0,y:y0+height},
+                    {x:x0+width,y:y0+height},
+                    {x:x0+width-stroke,y:y0+height-stroke},
+                    {x:x0+stroke,y:y0+height-stroke},
+                ]
+                break;
+            case "right":
+                vertices=[
+                    {x:x0+width,y:y0},
+                    {x:x0+width,y:y0+height},
+                    {x:x0+width-stroke,y:y0+height-stroke},
+                    {x:x0+width-stroke,y:y0+stroke},
+                ]
+                break;
+            default:
+                break;
+        }
+
+        return vertices;
+    }
+
+    function drawRectOutline(shape, stroke, style){
+        tctx.lineWidth = stroke; // Set the line width to 5 pixels (adjust as needed)
+        tctx.strokeStyle = style; // Set stroke color to red (you can change it to any color)
+       
+        if (typeof shape.pos === 'string') {
+           
+            tctx.beginPath();
+            tctx.moveTo(shape.vertTable[0].x, shape.vertTable[0].y);
+            for (var i = 0; i < shape.vertTable.length; i++) {
+                tctx.lineTo(shape.vertTable[i].x, shape.vertTable[i].y);
+                
+            }
+            tctx.closePath();
+            tctx.stroke();
+        }
+        tctx.strokeRect(shape.rectX, shape.rectY, shape.rectWidth, shape.rectHeight); // Draw a rectangle outline 
     }
 
     // Event listener for mouse click
-    canvas.addEventListener('click', function (e) {
-        var mouseX = e.clientX - canvas.getBoundingClientRect().left;
-        var mouseY = e.clientY - canvas.getBoundingClientRect().top;
-
-        var rect =  getRectangleCName(mouseX, mouseY);
+    topCanvas.addEventListener('click', function (e) {
+        var mouseX = e.clientX - topCanvas.getBoundingClientRect().left;
+        var mouseY = e.clientY - topCanvas.getBoundingClientRect().top;
+        var rect =  getClickedShape(mouseX, mouseY);
         // Check if the click is within the empty space of the rectangle
         if (
 
             rect &&
             drawHorizontalLine
         ) {
-            // Draw a horizontal line at the height of the mouse click
-            //ctx.lineWidth = rectStroke; // Set the line width to 5 pixels (adjust as needed)
-            //ctx.strokeStyle = '#7d7b79'; // Set stroke color to red (you can change it to any color)
-            // ctx.beginPath();
-            // ctx.moveTo(rect.rect.rectX-2, mouseY);
-            // ctx.lineTo(rect.rect.rectX + rect.rect.rectWidth+2, mouseY);
-            // ctx.stroke();
             ctx.fillStyle = '#7d7b79';
             ctx.fillRect(rect.rect.rectX-2, mouseY-(rectStroke/2), rect.rect.rectWidth+4, rectStroke);
 
@@ -81,14 +167,6 @@ document.addEventListener("DOMContentLoaded", function() {
             rect &&
             drawVerticalLine
         ){
-            // Draw a vertical line at the height of the mouse click
-            // ctx.lineWidth = rectStroke; // Set the line width to 5 pixels (adjust as needed)
-            // ctx.strokeStyle = '#7d7b79'; // Set stroke color to red (you can change it to any color)
-            // ctx.beginPath();
-            // ctx.moveTo(mouseX, rect.rect.rectY-2);
-            // ctx.lineTo(mouseX, rect.rect.rectY + rect.rect.rectHeight+2 );
-            // ctx.stroke();
-
             ctx.fillStyle = '#7d7b79';
             ctx.fillRect(mouseX-(rectStroke/2), rect.rect.rectY-2, rectStroke, rect.rect.rectHeight+4,);
             
@@ -104,7 +182,12 @@ document.addEventListener("DOMContentLoaded", function() {
             !drawHorizontalLine && !drawVerticalLine
         ) {
             // Check which rectangle was clicked
-            var clickedName = getRectangleCName(mouseX, mouseY);
+            var clickedName = getClickedShape(mouseX, mouseY);
+            if (clickedName) {
+                tctx.clearRect(0, 0, topCanvas.width, topCanvas.height);
+                drawRectOutline(clickedName.rect,4,'#FF0000')
+            }
+            
 
             // Log the color of the clicked rectangle
             let message = (clickedName) ? clickedName.is+"_"+clickedName.pos : "No rectangle was clicked";
@@ -112,12 +195,9 @@ document.addEventListener("DOMContentLoaded", function() {
         }
     });
 
-   
-
-    
 
    // Function to get the name of the clicked rectangle
-    function getRectangleCName(mouseX, mouseY) {
+    function getClickedShape(mouseX, mouseY) {
         for (var i = 0; i < rects.length; i++) {
             var rect = rects[i];
             if (
@@ -140,6 +220,20 @@ document.addEventListener("DOMContentLoaded", function() {
                 return {"pos":i, "is":"seperator", "rect": rect};
             }
         }
+        for (const frame of frames) {
+            ctx.beginPath();
+            ctx.moveTo(frame.vertTable[0].x, frame.vertTable[0].y);
+
+            for (var i = 1; i < frame.vertTable.length; i++) {
+                ctx.lineTo(frame.vertTable[i].x, frame.vertTable[i].y);
+            }
+
+            ctx.closePath();
+            if (ctx.isPointInPath(mouseX, mouseY)) {
+                return {"pos":frame.pos, "is":"frame", "rect": frame} 
+            }
+            
+        }
         return null; // Return null if no rectangle was clicked
     }
 
@@ -161,10 +255,9 @@ document.addEventListener("DOMContentLoaded", function() {
 
         rects.splice( rectDef.pos, 1, rect1, rect2);
     
-        for (const rect of rects) {
-            //ctx.strokeRect(rect.rectX, rect.rectY, rect.rectWidth, rect.rectHeight); // Draw a rectangle outline
-            drawRectOutline(rect,2,'#FF0000')
-        }
+        // for (const rect of rects) { 
+        //     drawRectOutline(rect,2,'#FF0000')// Draw a rectangle outline
+        // }
 
     }
 
@@ -186,13 +279,13 @@ document.addEventListener("DOMContentLoaded", function() {
         //console.log(mouseX, rect.rectWidth);
         rects.splice( rectDef.pos, 1, rect1, rect2);
  
-        for (const rect of rects) {
-            //ctx.strokeRect(rect.rectX, rect.rectY, rect.rectWidth, rect.rectHeight); // Draw a rectangle outline
-            drawRectOutline(rect,2,'#FF0000')
-        }
+        // for (const rect of rects) {
+        //     drawRectOutline(rect,2,'#FF0000')// Draw a rectangle outline
+        // }
        
 
     }
+
    
 })
 
