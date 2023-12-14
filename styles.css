@@ -2,6 +2,9 @@
     margin-top: 50px;
     position:relative;
     }
+.dimensions{
+    margin-top: 10px;
+}
 canvas {
     border: 1px solid #000;
     position:absolute;

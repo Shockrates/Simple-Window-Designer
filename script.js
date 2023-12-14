@@ -6,30 +6,36 @@ var rects = [];
 var seperators = [];
 var frames = [];
 
+
+// Rectangle coordinates and dimensions
+var rectX = 10;
+var rectY = 10;
+var rectWidth = 200;
+var rectHeight = 375;
+var rectStroke = 25;
+
 document.addEventListener("DOMContentLoaded", function() {
-
-    // Rectangle coordinates and dimensions
-    var rectX = 50;
-    var rectY = 50;
-    var rectWidth = 200;
-    var rectHeight = 375;
-    var rectStroke = 25;
-
     
-
- 
+    console.log(  rectWidth, 
+        rectHeight );
     rects = [
         {
             "name": "rect_0",
             "rectX": rectX+rectStroke,
             "rectY": rectY+rectStroke,
-            "rectWidth": rectWidth-2*rectStroke,
-            "rectHeight" :rectHeight-2*rectStroke
-
+            "rectWidth": getWindowWidth()-2*rectStroke,
+            "rectHeight" :getWindowHeight()-2*rectStroke
         }
     ]
 
-    
+   
+
+    function getWindowWidth(){
+        return rectWidth;
+    }
+    function getWindowHeight(){
+        return rectHeight; 
+    }
 
     const canvas = document.getElementById('myCanvas');
     const width = (canvas.width = window.innerWidth/1.5);
@@ -286,6 +292,25 @@ document.addEventListener("DOMContentLoaded", function() {
 
     }
 
+    document.getElementById('updateBtn').addEventListener('click',function(e){
+        
+        // Get the input field value
+        const widthValue = parseFloat(document.getElementById('width').value);
+        const heightValue = parseFloat(document.getElementById('height').value);
+        // Update the variables
+        rectWidth = widthValue;
+        rectHeight = heightValue;
+        console.log(  rectWidth, 
+            rectHeight );
+        ctx.clearRect(0, 0, topCanvas.width, topCanvas.height);
+        drawDrawFrame(rectX, rectY, getWindowWidth(), getWindowHeight(), rectStroke);
+        ctx.fillStyle = '#7d7b79';
+        for (const seperator of seperators) {
+            console.log(seperator.rectX, seperator.rectY, seperator.rectWidth, seperator.rectHeight);
+            ctx.fillRect(seperator.rectX, seperator.rectY, seperator.rectWidth, seperator.rectHeight);
+        }
+    } );
+
    
 })
 
@@ -303,5 +328,14 @@ function toggleVDrawing() {
 function showRectTable(){
     console.log(rects);
 }
+
+// function updateDimensions(){
+//     // Get the input field value
+//     const widthValue = document.getElementById('width').value;
+//     const heightValue = document.getElementById('height').value;
+//     // Update the variables
+//     rectWidth = widthValue;
+//     rectHeight = heightValue;
+// }
 
 
