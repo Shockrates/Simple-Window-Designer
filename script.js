@@ -6,35 +6,38 @@ var rects = [];
 var seperators = [];
 var frames = [];
 
+var productWindow = {
+    rectX: 10,
+    rectY: 10,
+    rectWidth: 200,
+    rectHeight: 375,
+    rectStroke: 25,
+    rects: [],
+    seperators: [ ],
+    frames: [ ],
+
+}
 
 // Rectangle coordinates and dimensions
-var rectX = 10;
-var rectY = 10;
-var rectWidth = 200;
-var rectHeight = 375;
-var rectStroke = 25;
+// var rectX = 10;
+// var rectY = 10;
+// var rectWidth = 200;
+// var rectHeight = 375;
+// var rectStroke = 25;
 
 document.addEventListener("DOMContentLoaded", function() {
     
-    console.log(  rectWidth, 
-        rectHeight );
-    rects = [
-        {
-            "name": "rect_0",
-            "rectX": rectX+rectStroke,
-            "rectY": rectY+rectStroke,
-            "rectWidth": getWindowWidth()-2*rectStroke,
-            "rectHeight" :getWindowHeight()-2*rectStroke
-        }
-    ]
+    console.log(  productWindow.rectWidth, 
+        productWindow.rectHeight );
+        
 
    
 
     function getWindowWidth(){
-        return rectWidth;
+        return productWindow.rectWidth;
     }
     function getWindowHeight(){
-        return rectHeight; 
+        return productWindow.rectHeight; 
     }
 
     const canvas = document.getElementById('myCanvas');
@@ -57,7 +60,7 @@ document.addEventListener("DOMContentLoaded", function() {
     // ctx.strokeStyle = '#7d7b79'; // Set stroke color to red (you can change it to any color)
     // ctx.strokeRect(rectX, rectY, rectWidth, rectHeight); // Draw a rectangle outline 
     
-    drawDrawFrame(rectX, rectY, rectWidth, rectHeight, rectStroke)
+    drawDrawFrame(productWindow.rectX, productWindow.rectY, productWindow.rectWidth, productWindow.rectHeight, productWindow.rectStroke)
     //drawRectOutline(rects[0],2,'#FF0000')
 
     function drawDrawFrame(x0, y0, width, height, stroke){
@@ -68,6 +71,19 @@ document.addEventListener("DOMContentLoaded", function() {
             {pos:"left",vertTable:getVertices("left",x0, y0, width, height, stroke)},
             {pos:"right",vertTable:getVertices("right",x0, y0, width, height, stroke)},
         ];
+        productWindow.rects = [
+            {
+                "name": "rect_0",
+                "rectX": productWindow.rectX+productWindow.rectStroke,
+                "rectY": productWindow.rectY+productWindow.rectStroke,
+                "rectWidth": getWindowWidth()-2*productWindow.rectStroke,
+                "rectHeight" :getWindowHeight()-2*productWindow.rectStroke,
+                "top": "frame_top",
+                "bottom": "frame_bottom",
+                "left": "frame_left",
+                "right": "frame_right"
+            }
+        ]
         for (const frame of frames) {
             drawShapeFromVertices(frame.vertTable);
         }
@@ -159,27 +175,27 @@ document.addEventListener("DOMContentLoaded", function() {
             drawHorizontalLine
         ) {
             ctx.fillStyle = '#7d7b79';
-            ctx.fillRect(rect.rect.rectX-2, mouseY-(rectStroke/2), rect.rect.rectWidth+4, rectStroke);
+            ctx.fillRect(rect.rect.rectX-2, mouseY-(productWindow.rectStroke/2), rect.rect.rectWidth+4, productWindow.rectStroke);
 
             seperators.push({
                 "rectX":rect.rect.rectX-2, 
-                "rectY":mouseY-(rectStroke/2), 
+                "rectY":mouseY-(productWindow.rectStroke/2), 
                 "rectWidth":rect.rect.rectWidth+4, 
-                "rectHeight":rectStroke
+                "rectHeight":productWindow.rectStroke
             })
 
-            rectVerticalSplit(mouseX, mouseY, rect)
+            rectVerticalSplit(mouseX, mouseY, rect, seperators.length-1)
         } else if(
             rect &&
             drawVerticalLine
         ){
             ctx.fillStyle = '#7d7b79';
-            ctx.fillRect(mouseX-(rectStroke/2), rect.rect.rectY-2, rectStroke, rect.rect.rectHeight+4,);
+            ctx.fillRect(mouseX-(productWindow.rectStroke/2), rect.rect.rectY-2, productWindow.rectStroke, rect.rect.rectHeight+4,);
             
             seperators.push({
-                "rectX":mouseX-(rectStroke/2), 
+                "rectX":mouseX-(productWindow.rectStroke/2), 
                 "rectY":rect.rect.rectY-2, 
-                "rectWidth":rectStroke, 
+                "rectWidth":productWindow.rectStroke, 
                 "rectHeight":rect.rect.rectHeight+4
             })
 
@@ -204,8 +220,8 @@ document.addEventListener("DOMContentLoaded", function() {
 
    // Function to get the name of the clicked rectangle
     function getClickedShape(mouseX, mouseY) {
-        for (var i = 0; i < rects.length; i++) {
-            var rect = rects[i];
+        for (var i = 0; i < productWindow.rects.length; i++) {
+            var rect = productWindow.rects[i];
             if (
                 mouseX >= rect.rectX &&
                 mouseX <= rect.rectX + rect.rectWidth &&
@@ -243,23 +259,31 @@ document.addEventListener("DOMContentLoaded", function() {
         return null; // Return null if no rectangle was clicked
     }
 
-    function rectVerticalSplit(mouseX, mouseY, rectDef){
+    function rectVerticalSplit(mouseX, mouseY, rectDef, seperator){
         let rect= rectDef.rect
         //console.log(rect);
         var rect1 = {
             "rectX": rect.rectX,
-            "rectY": mouseY+(rectStroke/2),
+            "rectY": mouseY+(productWindow.rectStroke/2),
             "rectWidth": rect.rectWidth,
-            "rectHeight" :rect.rectY+rect.rectHeight-mouseY-rectStroke/2
+            "rectHeight" :rect.rectY+rect.rectHeight-mouseY-productWindow.rectStroke/2,
+            "top": `seperator_${seperator}`,
+            "bottom": rect.bottom,
+            "left": rect.left,
+            "right": rect.right
         }
         var rect2 = {
             "rectX": rect.rectX,
             "rectY": rect.rectY,
             "rectWidth": rect.rectWidth,
-            "rectHeight" :mouseY-rect.rectY-rectStroke/2
+            "rectHeight" :mouseY-rect.rectY-productWindow.rectStroke/2,
+            "top": rect.top,
+            "bottom": `seperator_${seperator}`,
+            "left": rect.left,
+            "right": rect.right
         }
 
-        rects.splice( rectDef.pos, 1, rect1, rect2);
+        productWindow.rects.splice( rectDef.pos, 1, rect1, rect2);
     
         // for (const rect of rects) { 
         //     drawRectOutline(rect,2,'#FF0000')// Draw a rectangle outline
@@ -273,17 +297,17 @@ document.addEventListener("DOMContentLoaded", function() {
         var rect1 = {
             "rectX": rect.rectX,
             "rectY": rect.rectY,
-            "rectWidth": mouseX-rect.rectX-rectStroke/2,
+            "rectWidth": mouseX-rect.rectX-productWindow.rectStroke/2,
             "rectHeight": rect.rectHeight,
         }
         var rect2 = {
-            "rectX": mouseX+(rectStroke/2),
+            "rectX": mouseX+(productWindow.rectStroke/2),
             "rectY": rect.rectY,
-            "rectWidth": rect.rectX + rect.rectWidth-mouseX-rectStroke/2,
+            "rectWidth": rect.rectX + rect.rectWidth-mouseX-productWindow.rectStroke/2,
             "rectHeight" :rect.rectHeight,
         }
         //console.log(mouseX, rect.rectWidth);
-        rects.splice( rectDef.pos, 1, rect1, rect2);
+        productWindow.rects.splice( rectDef.pos, 1, rect1, rect2);
  
         // for (const rect of rects) {
         //     drawRectOutline(rect,2,'#FF0000')// Draw a rectangle outline
@@ -303,9 +327,9 @@ document.addEventListener("DOMContentLoaded", function() {
         console.log(  rectWidth, 
             rectHeight );
         ctx.clearRect(0, 0, topCanvas.width, topCanvas.height);
-        drawDrawFrame(rectX, rectY, getWindowWidth(), getWindowHeight(), rectStroke);
+        drawDrawFrame(productWindow.rectX, productWindow.rectY, getWindowWidth(), getWindowHeight(), productWindow.rectStroke);
         ctx.fillStyle = '#7d7b79';
-        for (const seperator of seperators) {
+        for (const seperator of productWindow.seperators) {
             console.log(seperator.rectX, seperator.rectY, seperator.rectWidth, seperator.rectHeight);
             ctx.fillRect(seperator.rectX, seperator.rectY, seperator.rectWidth, seperator.rectHeight);
         }
@@ -326,7 +350,7 @@ function toggleVDrawing() {
 } 
 
 function showRectTable(){
-    console.log(rects);
+    console.log(productWindow.rects);
 }
 
 // function updateDimensions(){
