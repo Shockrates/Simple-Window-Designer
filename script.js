@@ -199,7 +199,7 @@ document.addEventListener("DOMContentLoaded", function() {
                 "rectHeight":rect.rect.rectHeight+4
             })
 
-            rectHorizontalSplit(mouseX, mouseY, rect)
+            rectHorizontalSplit(mouseX, mouseY, rect, seperators.length-1)
         } else if (
             !drawHorizontalLine && !drawVerticalLine
         ) {
@@ -291,7 +291,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
     }
 
-    function rectHorizontalSplit(mouseX, mouseY, rectDef){
+    function rectHorizontalSplit(mouseX, mouseY, rectDef, seperator){
         let rect= rectDef.rect
         
         var rect1 = {
@@ -299,12 +299,20 @@ document.addEventListener("DOMContentLoaded", function() {
             "rectY": rect.rectY,
             "rectWidth": mouseX-rect.rectX-productWindow.rectStroke/2,
             "rectHeight": rect.rectHeight,
+            "top": rect.top,
+            "bottom": rect.bottom,
+            "left": rect.left,
+            "right": `seperator_${seperator}`
         }
         var rect2 = {
             "rectX": mouseX+(productWindow.rectStroke/2),
             "rectY": rect.rectY,
             "rectWidth": rect.rectX + rect.rectWidth-mouseX-productWindow.rectStroke/2,
             "rectHeight" :rect.rectHeight,
+            "top": rect.top,
+            "bottom": rect.bottom,
+            "left": `seperator_${seperator}`,
+            "right": rect.right
         }
         //console.log(mouseX, rect.rectWidth);
         productWindow.rects.splice( rectDef.pos, 1, rect1, rect2);
