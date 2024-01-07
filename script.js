@@ -13,8 +13,8 @@ var productWindow = {
     rectHeight: 375,
     rectStroke: 25,
     rects: [],
-    seperators: [ ],
-    frames: [ ],
+    seperators: [],
+    frames: [],
 
 }
 
@@ -27,12 +27,6 @@ var productWindow = {
 
 document.addEventListener("DOMContentLoaded", function() {
     
-    console.log(  productWindow.rectWidth, 
-        productWindow.rectHeight );
-        
-
-   
-
     function getWindowWidth(){
         return productWindow.rectWidth;
     }
@@ -71,19 +65,24 @@ document.addEventListener("DOMContentLoaded", function() {
             {pos:"left",vertTable:getVertices("left",x0, y0, width, height, stroke)},
             {pos:"right",vertTable:getVertices("right",x0, y0, width, height, stroke)},
         ];
-        productWindow.rects = [
-            {
-                "name": "rect_0",
-                "rectX": productWindow.rectX+productWindow.rectStroke,
-                "rectY": productWindow.rectY+productWindow.rectStroke,
-                "rectWidth": getWindowWidth()-2*productWindow.rectStroke,
-                "rectHeight" :getWindowHeight()-2*productWindow.rectStroke,
-                "top": "frame_top",
-                "bottom": "frame_bottom",
-                "left": "frame_left",
-                "right": "frame_right"
-            }
-        ]
+
+        if (productWindow.rects.length == 0) {
+            console.log("This must be print only once");
+            productWindow.rects = [
+                {
+                    "name": "rect_0",
+                    "rectX": productWindow.rectX+productWindow.rectStroke,
+                    "rectY": productWindow.rectY+productWindow.rectStroke,
+                    "rectWidth": getWindowWidth()-2*productWindow.rectStroke,
+                    "rectHeight" :getWindowHeight()-2*productWindow.rectStroke,
+                    "top": "frame_top",
+                    "bottom": "frame_bottom",
+                    "left": "frame_left",
+                    "right": "frame_right"
+                }
+            ]
+        }
+        
         for (const frame of frames) {
             drawShapeFromVertices(frame.vertTable);
         }
@@ -177,14 +176,14 @@ document.addEventListener("DOMContentLoaded", function() {
             ctx.fillStyle = '#7d7b79';
             ctx.fillRect(rect.rect.rectX-2, mouseY-(productWindow.rectStroke/2), rect.rect.rectWidth+4, productWindow.rectStroke);
 
-            seperators.push({
+            productWindow.seperators.push({
                 "rectX":rect.rect.rectX-2, 
                 "rectY":mouseY-(productWindow.rectStroke/2), 
                 "rectWidth":rect.rect.rectWidth+4, 
                 "rectHeight":productWindow.rectStroke
             })
 
-            rectVerticalSplit(mouseX, mouseY, rect, seperators.length-1)
+            rectVerticalSplit(mouseX, mouseY, rect, productWindow.seperators.length-1)
         } else if(
             rect &&
             drawVerticalLine
@@ -192,14 +191,14 @@ document.addEventListener("DOMContentLoaded", function() {
             ctx.fillStyle = '#7d7b79';
             ctx.fillRect(mouseX-(productWindow.rectStroke/2), rect.rect.rectY-2, productWindow.rectStroke, rect.rect.rectHeight+4,);
             
-            seperators.push({
+            productWindow.seperators.push({
                 "rectX":mouseX-(productWindow.rectStroke/2), 
                 "rectY":rect.rect.rectY-2, 
                 "rectWidth":productWindow.rectStroke, 
                 "rectHeight":rect.rect.rectHeight+4
             })
 
-            rectHorizontalSplit(mouseX, mouseY, rect, seperators.length-1)
+            rectHorizontalSplit(mouseX, mouseY, rect, productWindow.seperators.length-1)
         } else if (
             !drawHorizontalLine && !drawVerticalLine
         ) {
@@ -231,8 +230,8 @@ document.addEventListener("DOMContentLoaded", function() {
                 return {"pos":i, "is":"oppening" ,"rect": rect};
             }
         }
-        for (var i = 0; i < seperators.length; i++) {
-            var rect = seperators[i];
+        for (var i = 0; i < productWindow.seperators.length; i++) {
+            var rect = productWindow.seperators[i];
             if (
                 mouseX >= rect.rectX &&
                 mouseX <= rect.rectX + rect.rectWidth &&
@@ -267,7 +266,7 @@ document.addEventListener("DOMContentLoaded", function() {
             "rectY": mouseY+(productWindow.rectStroke/2),
             "rectWidth": rect.rectWidth,
             "rectHeight" :rect.rectY+rect.rectHeight-mouseY-productWindow.rectStroke/2,
-            "top": `seperator_${seperator}`,
+            "top": seperator,
             "bottom": rect.bottom,
             "left": rect.left,
             "right": rect.right
@@ -278,7 +277,7 @@ document.addEventListener("DOMContentLoaded", function() {
             "rectWidth": rect.rectWidth,
             "rectHeight" :mouseY-rect.rectY-productWindow.rectStroke/2,
             "top": rect.top,
-            "bottom": `seperator_${seperator}`,
+            "bottom": seperator,
             "left": rect.left,
             "right": rect.right
         }
@@ -302,7 +301,7 @@ document.addEventListener("DOMContentLoaded", function() {
             "top": rect.top,
             "bottom": rect.bottom,
             "left": rect.left,
-            "right": `seperator_${seperator}`
+            "right": seperator
         }
         var rect2 = {
             "rectX": mouseX+(productWindow.rectStroke/2),
@@ -311,7 +310,7 @@ document.addEventListener("DOMContentLoaded", function() {
             "rectHeight" :rect.rectHeight,
             "top": rect.top,
             "bottom": rect.bottom,
-            "left": `seperator_${seperator}`,
+            "left": seperator,
             "right": rect.right
         }
         //console.log(mouseX, rect.rectWidth);
@@ -329,22 +328,73 @@ document.addEventListener("DOMContentLoaded", function() {
         // Get the input field value
         const widthValue = parseFloat(document.getElementById('width').value);
         const heightValue = parseFloat(document.getElementById('height').value);
+
+        updateDimensions(productWindow, widthValue, heightValue);
         // Update the variables
-        rectWidth = widthValue;
-        rectHeight = heightValue;
-        console.log(  rectWidth, 
-            rectHeight );
+        productWindow.rectWidth = widthValue;
+        productWindow.rectHeight = heightValue;
+        
         ctx.clearRect(0, 0, topCanvas.width, topCanvas.height);
+        tctx.clearRect(0, 0, topCanvas.width, topCanvas.height);
         drawDrawFrame(productWindow.rectX, productWindow.rectY, getWindowWidth(), getWindowHeight(), productWindow.rectStroke);
         ctx.fillStyle = '#7d7b79';
         for (const seperator of productWindow.seperators) {
-            console.log(seperator.rectX, seperator.rectY, seperator.rectWidth, seperator.rectHeight);
+            //console.log(seperator.rectX, seperator.rectY, seperator.rectWidth, seperator.rectHeight);
             ctx.fillRect(seperator.rectX, seperator.rectY, seperator.rectWidth, seperator.rectHeight);
         }
+        
+       
     } );
 
    
 })
+
+function updateDimensions(win, newWidth, newHeight){
+    const modifiedSeperrators = new Set();
+    //if (win.rectWidth != newWidth) {
+         
+        for (const oppening of win.rects) {
+            if (win.rectWidth != newWidth && oppening.right === "frame_right") {
+
+                oppening.rectWidth = oppening.rectWidth+newWidth-win.rectWidth
+               
+                if(win.seperators[oppening.top] && !modifiedSeperrators.has(win.seperators[oppening.top])){
+                    win.seperators[oppening.top].rectWidth+=newWidth-win.rectWidth
+                    //console.log(win.seperators[oppening.top].rectWidth," ", win.seperators[oppening.top].rectWidth+=newWidth-win.rectWidth);
+                    modifiedSeperrators.add(win.seperators[oppening.top]) 
+                }
+                if(win.seperators[oppening.bottom] && !modifiedSeperrators.has(win.seperators[oppening.bottom])){
+                    win.seperators[oppening.bottom].rectWidth+=newWidth-win.rectWidth
+                    //console.log(win.seperators[oppening.bottom].rectWidth," ", win.seperators[oppening.bottom].rectWidth+=newWidth-win.rectWidth);
+                    modifiedSeperrators.add(win.seperators[oppening.bottom]) 
+                }
+            }
+
+            if (win.rectHeight != newHeight && oppening.bottom === "frame_bottom") {
+             
+                console.log(oppening.rectHeight,"+",newHeight,"-",win.rectHeight);
+                oppening.rectHeight = oppening.rectHeight+newHeight-win.rectHeight
+                //console.log(win.rects[0].rectHeight,"  ",oppening.rectHeight);
+                console.log(win.rects[0]);
+               
+                if(win.seperators[oppening.right] && !modifiedSeperrators.has(win.seperators[oppening.right])){
+                    win.seperators[oppening.right].rectHeight+=newHeight-win.rectHeight
+                    //console.log(win.seperators[oppening.right].rectHeight," ", win.seperators[oppening.right].rectHeight+=newHeight-win.rectHeight);
+                    modifiedSeperrators.add(win.seperators[oppening.right]) 
+                }
+                if(win.seperators[oppening.left] && !modifiedSeperrators.has(win.seperators[oppening.left])){
+                    win.seperators[oppening.left].rectHeight+=newHeight-win.rectHeight
+                    //console.log(win.seperators[oppening.left].rectWidth," ", win.seperators[oppening.left].rectWidth+=newWidth-win.rectWidth);
+                    modifiedSeperrators.add(win.seperators[oppening.left]) 
+                }
+            }
+        }
+        
+    //}
+
+    
+}
+
 
 // Function to toggle the boolean variable
 function toggleHDrawing() {
@@ -361,13 +411,6 @@ function showRectTable(){
     console.log(productWindow.rects);
 }
 
-// function updateDimensions(){
-//     // Get the input field value
-//     const widthValue = document.getElementById('width').value;
-//     const heightValue = document.getElementById('height').value;
-//     // Update the variables
-//     rectWidth = widthValue;
-//     rectHeight = heightValue;
-// }
+
 
 
